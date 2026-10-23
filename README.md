@@ -1,39 +1,60 @@
-# AI Learning Lab — 学習記録デモ
+# Neural Daylight — 機械学習エンジニア向け技術教材
 
-GitHub Pagesで公開できる、**HTML単体**のデモです。GASやデータベースサーバーは使いません。
+GitHub Pagesで動く、機械学習開発技術のブラウザ教材です。
 
-## 試し方
+## 収録内容
 
-1. `index.html` をローカルのWebサーバーで開きます。例: `python3 -m http.server 8000` → `http://localhost:8000/`。
-2. 「この教材を学習済みにする」を押します。
-3. 「Pythonを実行」を押すと、初回はインターネットからPyodide 0.27.7を読み込み、ブラウザでPythonを実行します。
-4. テストに回答し、右側の「学習履歴」を確認します。
-5. ページを再読み込みしても記録が残ることを確認します。
-6. 「JSONで出力」から記録をダウンロードできます。
+- Git：13ページ / 理解度テスト10問 / ステージング・コミット疑似操作
+- Docker：12ページ / 理解度テスト10問 / イメージ・コンテナ・volume疑似操作
+- pytest：11ページ / 理解度テスト10問 / assertの疑似テスト
+- MLflow：12ページ / 理解度テスト10問 / Run記録・比較疑似操作
 
-## GitHub Pagesへの公開
+合計48ページ、40問。講座の最後にまとめてテストし、70%以上を合格目安とします。
 
-1. 新しい **公開可能な** GitHubリポジトリを作成し、`index.html` と `README.md` をリポジトリのルートに追加します。
-2. Settings → Pages → Build and deployment → Deploy from a branch を選びます。
-3. Branch: `main` / `/(root)` を選択して保存します。
-4. 表示された `https://<username>.github.io/<repository>/` にアクセスします。
+## 公開方法
 
-## 技術・保存仕様
+このフォルダの `index.html`、`src/`、`assets/`、`legacy-demo.html` をGitHub Pagesの公開元（通常はmainブランチのルート）へ配置します。
 
-- HTML / CSS / JavaScript（ビルド不要）
-- IndexedDB：`events`（イベント履歴）、`state`（エディタ内容）
-- Pyodide 0.27.7：jsDelivr CDNからオンデマンド読み込み
-- 記録：教材完了・実行結果（コードと出力）・テスト回答・コード保存
-- JavaScriptのイベント表示には `textContent` を使用して保存内容をHTMLとして解釈しない構成
+GitHubリポジトリの **Settings → Pages → Build and deployment** で `Deploy from a branch`、`main` / `/(root)` を指定します。
 
-## 制約と注意点
+公開URL例: `https://sakumiya0922.github.io/ai-learning-demo/`
 
-- 記録は**ブラウザ・端末・オリジン単位**です。別端末への自動同期や管理者集計はできません。
-- ブラウザデータ削除、プライベートモード、ストレージ制限などで記録が失われる場合があります。
-- Python実行にはインターネット接続が必要です。CDNが使えないネットワークでは利用できません。
-- Pythonコードはブラウザの実行環境で処理されますが、悪意のある任意コードの実行を許す用途として堅牢なサンドボックスを保証しません。公開デモでは信頼できない教材コードを含めないでください。
-- **会社のソースコード、教材、画像、個人情報、機密情報をアップロードしないでください。** 社内の成果物を外部公開するには権利・社内規定の確認が必要です。このデモは架空の学習内容から独立して作成しています。
+## ローカルでの確認
 
-## 拡張案
+```sh
+python3 -m http.server 8000
+```
 
-複数ユーザーのログインや横断集計が必要になったら、Firebase Authentication + Firestoreなどの認証・クラウドDBを別途導入します。GitHub Pagesだけではサーバー側の処理は実行できません。
+ブラウザで `http://localhost:8000/` を開きます。ESモジュールのため `index.html` を直接ダブルクリックする方法は推奨しません。
+
+## 技術仕様
+
+- サーバー不要：HTML / CSS / JavaScript（ES Modules）
+- ログイン画面は認証ではなくローカル表示名の入力
+- 学習進捗、テスト履歴、疑似操作状態はIndexedDB `ai-learning-portfolio` の `state` ストアへ保存
+- 過去のイベント履歴を破壊しないため、既存ストアに追加記録する方式を採用
+- JSONエクスポートで記録を個人保存可能
+- コマンドの体験部分は**疑似操作**であり、実際のGit/Docker/pytest/MLflowはブラウザ上で実行しない
+- 過去のPython実行実証デモに相当するページを `legacy-demo.html` に用意
+
+## 公開上の注意
+
+認証・サーバーDB・端末間同期はありません。学習履歴はブラウザのオリジンごとに保持され、閲覧データ削除で失われる場合があります。公開教材には機密情報や会社のコードを含めないでください。各講座のコード例は学習用です。
+
+## ソースの位置
+
+`src/courses/` の各JSファイルが教材本文・確認問題のデータです。`src/app.js` が画面描画と操作、`src/storage.js` がIndexedDB永続化を担当します。
+
+## 既存GitHub Pagesリポジトリへ反映する（Mac）
+
+ZIPを展開し、Macのターミナルで `ai-learning-demo-site` フォルダを開いて以下を実行します。**GitHubへのpush権限とGit認証が必要です。**
+
+```sh
+bash publish-to-github.sh
+```
+
+このスクリプトは独立した一時フォルダへ既存リポジトリをcloneし、最初の実行時に旧 `index.html` を `legacy-demo-original.html` に退避してから教材をコピー・commit・pushします。手元の既存作業フォルダは変更しません。外部公開の前にGitHub上の変更内容を確認してください。
+
+Web画面から手動アップロードする場合は、**ZIPを展開した中の** `ai-learning-demo-site` フォルダにある `index.html` と `src/`、`assets/`、`docs/`、`tests/` 等を、既存リポジトリのルートへアップロードします。GitHub Pagesの公開設定は `main` と `/(root)` にしてください。旧 `index.html` を保存したい場合は、アップロード前に `legacy-demo-original.html` に名前を変えて保管してください。
+
+注意：ログイン風の入口は本人認証ではありません。教材の疑似操作は実際のツールコマンドではありません。学習履歴はブラウザ内保存で、サーバー共有や管理者集計はありません。
