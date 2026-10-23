@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {COURSES} from '../src/courses/index.js';
+import {COURSES} from '../courses/index.js';
 
 const allowed=new Set(['text','list','note','table','diagram','code','lab']);
 test('four complete courses',()=>{

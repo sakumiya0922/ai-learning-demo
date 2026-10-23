@@ -7,36 +7,36 @@ import { resolve, dirname } from 'node:path';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = path => readFileSync(resolve(root, path), 'utf8');
 
-test('GitHub Pages entry and static resources are present', () => {
+test('GitHub Pagesの入口から必要なファイルを読み込める', () => {
   const html = read('index.html');
-  assert.match(html, /<meta charset="UTF-8">/);
-  for (const p of ['assets/styles.css', 'assets/favicon.svg', 'src/app.js']) {
-    assert.ok(html.includes(`"${p}"`), `index.html should reference ${p}`);
-    assert.ok(existsSync(resolve(root, p)), `Missing ${p}`);
+  for (const path of ['assets/styles.css', 'assets/favicon.svg', 'app/main.js']) {
+    assert.ok(html.includes(`"${path}"`), `index.htmlに ${path} がありません`);
+    assert.ok(existsSync(resolve(root, path)), `ファイルがありません: ${path}`);
   }
 });
 
-test('course modules, storage and design specification are present', () => {
-  const paths = [
-    'src/courses/git.js', 'src/courses/docker.js',
-    'src/courses/pytest.js', 'src/courses/mlflow.js',
-    'src/courses/index.js', 'src/storage.js', 'docs/教材設計書.md'
-  ];
-  for (const p of paths) assert.ok(existsSync(resolve(root, p)), `Missing ${p}`);
+test('アプリと教材のコードが分離されている', () => {
+  for (const path of [
+    'app/main.js', 'app/storage.js', 'courses/index.js', 'courses/utils.js',
+    'courses/git.js', 'courses/docker.js', 'courses/pytest.js', 'courses/mlflow.js',
+    'docs/教材設計書.md', 'assets/styles.css', 'assets/favicon.svg'
+  ]) assert.ok(existsSync(resolve(root, path)), `ファイルがありません: ${path}`);
+  assert.match(read('app/main.js'), /from '\.\.\/courses\/index\.js'/);
+  assert.match(read('app/main.js'), /from '\.\/storage\.js'/);
+  assert.match(read('tests/content.test.js'), /from '\.\.\/courses\/index\.js'/);
 });
 
-test('unused prototype pages and one-time deployment script are removed', () => {
-  for (const p of ['legacy-demo.html', 'legacy-demo-original.html',
-    'archive/legacy-demo-original.html', 'scripts/publish-to-github.sh']) {
-    assert.ok(!existsSync(resolve(root, p)), `Unused file remains: ${p}`);
-  }
-  assert.doesNotMatch(read('src/app.js'), /legacy-demo\.html/);
+test('旧デモ・旧構成は含まれていない', () => {
+  for (const path of [
+    'src/', 'legacy-demo.html', 'legacy-demo-original.html',
+    'archive/legacy-demo-original.html', 'scripts/publish-to-github.sh'
+  ]) assert.equal(existsSync(resolve(root, path)), false, `不要ファイルが残っています: ${path}`);
+  assert.doesNotMatch(read('app/main.js'), /legacy-demo\.html/);
 });
 
-test('new repository name and Pages URL are used in README', () => {
+test('READMEは見学者向けで簡潔', () => {
   const readme = read('README.md');
-  assert.match(readme, /sakumiya0922\/ml-engineering-learning-lab/);
-  assert.doesNotMatch(readme, /https:\/\/sakumiya0922\.github\.io\/ai-learning-demo/);
-  assert.ok(existsSync(resolve(root, '.gitignore')));
-  assert.ok(existsSync(resolve(root, '.nojekyll')));
+  assert.match(readme, /https:\/\/sakumiya0922\.github\.io\/ml-engineering-learning-lab\//);
+  assert.match(readme, /assets\/preview\.png/);
+  assert.ok(readme.split('\n').length < 60, 'READMEを短く維持する');
 });

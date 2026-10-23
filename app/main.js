@@ -1,4 +1,4 @@
-import {COURSES,getCourse} from './courses/index.js';
+import {COURSES,getCourse} from '../courses/index.js';
 import {loadApp,saveApp,addEvent,getEvents,exportLearning,clearLearning,isPersistent} from './storage.js';
 
 const root=document.getElementById('app');
