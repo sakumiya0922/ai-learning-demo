@@ -39,3 +39,27 @@ test('each course includes a browser-only hands-on simulation',()=>{
  const labs=COURSES.map(c=>[...new Set(c.pages.flatMap(p=>p.blocks.filter(b=>b.type==='lab').map(b=>b.kind)))]);
  assert.deepEqual(labs,[['git'],['docker'],['pytest'],['mlflow']]);
 });
+
+
+test('all 77 pages have exactly one authored takeaway in declarative voice',()=>{
+ const all=COURSES.flatMap(c=>c.pages.map(p=>({course:c.id,...p})));
+ assert.equal(all.length,77);
+ for(const p of all){
+  assert.ok(typeof p.takeaway==='string'&&p.takeaway.length>12,`${p.course}/${p.id} needs takeaway`);
+  assert.doesNotMatch(p.takeaway,/(?:です|ます|ません)(?:[。！？]|$)/,`${p.course}/${p.id} non-declarative takeaway`);
+  const plain=p.takeaway.replace(/\*\*/g,'');
+  assert.ok(plain.length<95,`${p.course}/${p.id} takeaway too long`);
+ }
+});
+
+test('displayed explanatory content is declarative and code samples are unchanged',()=>{
+ for(const c of COURSES){
+  for(const p of c.pages){
+   for(const b of p.blocks){
+    for(const key of ['body','caption','footer','description']){
+     if(typeof b[key]==='string')assert.doesNotMatch(b[key],/(?:です|ます|ません)[。！？]/,`${c.id}/${p.id}:${key}`);
+    }
+   }
+  }
+ }
+});

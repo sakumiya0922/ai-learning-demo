@@ -149,3 +149,50 @@ body:has(.lesson-frame){overflow:hidden}
  .lesson-frame .lesson-section{margin:21px 0}
  .toolbar-buttons .btn{font-size:11px;padding:10px 11px}
 }
+
+/* v4 — 1ページ1結論 / パート分離 / フレーム外ナビゲーション */
+.lesson-frame .lesson-content{padding-top:19px}
+.lesson-frame .lesson-title{margin:8px 0 16px}
+.lesson-conclusion{position:relative;background:linear-gradient(115deg,#eaf7ff,#edfaf7);border:1px solid #cce8ed;border-left:5px solid #218cbd;border-radius:14px;padding:17px 22px 19px;margin:0 0 26px;box-shadow:0 5px 16px #3289a008}
+.lesson-conclusion-label{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.055em;font-weight:900;color:#197b97;margin-bottom:9px}
+.conclusion-dot{width:8px;height:8px;background:#2f9dbb;border-radius:50%;display:inline-block}
+.lesson-conclusion p{font-size:clamp(16px,1.48vw,20px);line-height:1.8;font-weight:680;letter-spacing:.01em;color:#203d59;margin:0;overflow-wrap:anywhere}
+.lesson-conclusion strong{color:#0b639d;font-weight:900;text-decoration:underline;text-decoration-color:#a8d6eb;text-decoration-thickness:3px;text-underline-offset:5px}
+.lesson-part{padding:18px 7px 22px 19px;margin:0 0 12px;border-top:1px solid #d5e6ee;border-left:3px solid transparent;min-width:0}
+.lesson-part:first-of-type{border-top:0}
+.lesson-part-visual,.lesson-part-diagram,.lesson-part-lab{border-left-color:#a0d8e8}
+.lesson-part-code{border-left-color:#b6c7df}
+.lesson-part-note{border-left-color:#b9d7c2}
+.lesson-part-head{display:flex;align-items:center;gap:9px;margin:0 0 15px;color:#67869e}
+.lesson-part-number{font-size:10px;font-weight:900;letter-spacing:.075em;color:#1583b5;background:#eaf6ff;border-radius:7px;padding:5px 8px}
+.lesson-part-kind{font-size:11px;font-weight:800;color:#68869b}
+.lesson-frame .lesson-part .lesson-section{margin:0 0 6px}
+.lesson-frame .lesson-part .lesson-section h3{margin-top:0;font-size:18px}
+.lesson-frame .lesson-part .lesson-section p{max-width:880px}
+.lesson-frame .lesson-part .visual-card{margin:0}
+.lesson-frame .lesson-part .code-card{margin:12px 0}
+/* 移動バーには囲いを置かず、ボタンだけを教材の左右端に配置 */
+.lesson-frame .lesson-toolbar{flex:0 0 auto;display:block;background:transparent;border:0;border-radius:0;box-shadow:none;padding:1px 0 0;margin:0;min-height:50px}
+.lesson-frame .toolbar-buttons{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.lesson-frame .lesson-move{min-width:158px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 17px;border-radius:10px;font-size:13px;font-weight:800}
+.lesson-frame .lesson-move:disabled{opacity:.38;cursor:not-allowed}
+.lesson-frame .lesson-move:not(:disabled):focus-visible{outline:3px solid #6dbbea;outline-offset:3px}
+.quiz-submit-row{display:flex;justify-content:flex-end;padding:10px 0 18px}
+.quiz-result-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+@media(max-width:820px){
+ .lesson-frame .lesson-content{padding:16px 18px 30px}
+ .lesson-frame .lesson-move{font-size:12px;min-width:135px;padding:10px 13px}
+ .lesson-conclusion{padding:16px 17px}
+ .lesson-conclusion p{font-size:17px}
+ .lesson-part{padding:16px 2px 20px 12px}
+}
+@media(max-width:420px){
+ .lesson-frame .lesson-content{padding:14px 13px 25px}
+ .lesson-frame .lesson-move{min-width:0;font-size:11px;padding:9px 10px}
+ .lesson-conclusion p{font-size:15px}
+ .lesson-part-head{margin-bottom:12px}
+}
+.keyboard-nav-hint{font-size:11px;font-weight:700;color:#86a0b2;letter-spacing:.03em;white-space:nowrap}
+/* メッセージはナビゲーションのボタンに重ねない。 */
+.lesson-frame ~ .toast,body:has(.lesson-frame) .toast{bottom:auto;top:73px;right:20px}
+@media(max-width:820px){.keyboard-nav-hint{display:none}}

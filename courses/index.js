@@ -1,8 +1,10 @@
-import {gitCourse} from './git.js?v=3';
-import {dockerCourse} from './docker.js?v=3';
-import {pytestCourse} from './pytest.js?v=3';
-import {mlflowCourse} from './mlflow.js?v=3';
-import {enrichWithVisuals} from './visuals.js?v=3';
+import {gitCourse} from './git.js?v=4';
+import {dockerCourse} from './docker.js?v=4';
+import {pytestCourse} from './pytest.js?v=4';
+import {mlflowCourse} from './mlflow.js?v=4';
+import {enrichWithVisuals} from './visuals.js?v=4';
+import {withKeypoints} from './keypoints.js?v=4';
+import {withDeclarativeVoice} from './editorial.js?v=4';
 
 export const STAGES = [
  {id:1,name:'達成目標',short:'達成目標',detail:'この講座のゴールと全体の学習順序を確認する'},
@@ -31,7 +33,7 @@ function prepareCourse(raw){
   ]};
   pages=[overview,...pages];
  }
- return enrichWithVisuals({...raw,pages});
+ return withDeclarativeVoice(withKeypoints(enrichWithVisuals({...raw,pages})));
 }
 export const COURSES=[gitCourse,dockerCourse,pytestCourse,mlflowCourse].map(prepareCourse);
 export const getCourse=id=>COURSES.find(c=>c.id===id);
