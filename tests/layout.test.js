@@ -58,3 +58,19 @@ test('left and right arrow navigation avoids form controls and page overrun',()=
  assert.match(app,/event.key==='ArrowLeft'&&index>0/);
  assert.match(app,/event.key==='ArrowRight'&&index<current.course.pages.length-1/);
 });
+
+test('parts show only a number and a meaningful title',()=>{
+ const app=read('app/main.js');
+ assert.doesNotMatch(app,/VISUAL GUIDE|function partLabel\(/);
+ assert.doesNotMatch(app,/PART \${String\(i\+1\)/);
+ assert.match(app,/lesson-part-title/);
+ assert.match(app,/renderBlock\(block,`\${partIndex}-\${index}`/);
+ const css=read('assets/styles.css');
+ assert.match(css,/\.lesson-part\{border-top:[^}]*border-left:0!important/);
+});
+
+test('continuation titles omit leading chapter separators and footer avoids decorative hints',()=>{
+ const app=read('app/main.js');
+ assert.match(app,/第\[0-9０-９\]\+章/);
+ assert.doesNotMatch(app,/class="keyboard-nav-hint"/);
+});

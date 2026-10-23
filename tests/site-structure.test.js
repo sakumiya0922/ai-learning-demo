@@ -10,7 +10,7 @@ const read = path => readFileSync(resolve(root, path), 'utf8');
 test('GitHub Pagesの入口から必要なファイルを読み込める', () => {
   const html = read('index.html');
   for (const path of ['assets/styles.css', 'assets/favicon.svg', 'app/main.js']) {
-    assert.ok(html.includes(`"${path}"`) || html.includes(`"${path}?v=4"`), `index.htmlに ${path} がありません`);
+    assert.ok(html.includes(`"${path}"`) || html.includes(`"${path}?v=5"`), `index.htmlに ${path} がありません`);
     assert.ok(existsSync(resolve(root, path)), `ファイルがありません: ${path}`);
   }
 });
@@ -18,7 +18,7 @@ test('GitHub Pagesの入口から必要なファイルを読み込める', () =>
 test('アプリと教材のコードが分離されている', () => {
   for (const path of [
     'app/main.js', 'app/storage.js', 'courses/index.js', 'courses/utils.js',
-    'courses/git.js', 'courses/docker.js', 'courses/pytest.js', 'courses/mlflow.js', 'courses/visuals.js', 'courses/keypoints.js', 'courses/editorial.js',
+    'courses/parts.js', 'courses/git.js', 'courses/docker.js', 'courses/pytest.js', 'courses/mlflow.js', 'courses/visuals.js', 'courses/keypoints.js', 'courses/editorial.js',
     'docs/教材設計書.md', 'assets/styles.css', 'assets/favicon.svg'
   ]) assert.ok(existsSync(resolve(root, path)), `ファイルがありません: ${path}`);
   assert.match(read('app/main.js'), /from '\.\.\/courses\/index\.js(?:\?v=[0-9]+)?'/);

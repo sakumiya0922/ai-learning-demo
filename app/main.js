@@ -1,4 +1,4 @@
-import {COURSES,getCourse,STAGES,getStage} from '../courses/index.js?v=4';
+import {COURSES,getCourse,STAGES,getStage} from '../courses/index.js?v=5';
 import {loadApp,saveApp,addEvent,getEvents,exportLearning,clearLearning,isPersistent} from './storage.js';
 
 const root=document.getElementById('app');
@@ -31,7 +31,6 @@ function dashboard(){
 }
 function renderVisual(block){
  const items=block.items||[];
- const heading=`<div class="visual-heading"><span class="visual-eyebrow">VISUAL GUIDE</span><h3>${rich(block.title)}</h3></div>`;
  const caption=block.caption?`<p class="visual-caption">${rich(block.caption)}</p>`:'';
  const type=block.variant||'flow';
  const cell=(item,i)=>`<div class="visual-cell"><span class="visual-count">${String(i+1).padStart(2,'0')}</span><strong>${rich(item.label)}</strong><p>${rich(item.detail)}</p></div>`;
@@ -51,23 +50,23 @@ function renderVisual(block){
  }else{
   figure=`<div class="visual-zones">${items.map((item,i)=>`${i?'<span class="visual-flow-arrow" aria-hidden="true">→</span>':''}${cell(item,i)}`).join('')}</div>`;
  }
- return `<section class="lesson-section"><figure class="visual-card visual-variant-${esc(type)}">${heading}${figure}${caption}</figure></section>`;
+ return `<section class="lesson-section"><figure class="visual-card visual-variant-${esc(type)}">${figure}${caption}</figure></section>`;
 }
-function renderBlock(block,index,course,page){
- const hdr=block.title?`<h3>${rich(block.title)}</h3>`:'';
+function renderBlock(block,index,course,page,omitTitle=false){
+ const hdr=block.title&&!omitTitle?`<h3>${rich(block.title)}</h3>`:'';
  if(block.type==='visual')return renderVisual(block);
  if(block.type==='text')return `<section class="lesson-section">${hdr}<p>${rich(block.body)}</p></section>`;
  if(block.type==='list')return `<section class="lesson-section">${hdr}<ul class="bullet-items">${block.items.map(item=>`<li>${rich(item)}</li>`).join('')}</ul></section>`;
  if(block.type==='code')return `<section class="lesson-section">${hdr}<div class="code-card"><div class="code-bar"><span>${esc(block.lang||'text')} · 実行例</span><button type="button" data-action="copy" data-copy-id="source-${index}" aria-label="コードをコピー">コピー</button></div><pre><code id="source-${index}">${esc(block.source)}</code></pre></div>${block.caption?`<div class="code-help">${rich(block.caption)}</div>`:''}</section>`;
- if(block.type==='note')return `<section class="lesson-section"><div class="note ${block.level==='warn'?'warn':block.level==='good'?'good':''}"><strong>${rich(block.title)}</strong><div>${rich(block.body)}</div></div></section>`;
+ if(block.type==='note')return `<section class="lesson-section"><div class="part-note ${block.level==='warn'?'is-warning':''}">${block.level==='warn'?'<strong>注意</strong>':''}<p>${rich(block.body)}</p></div></section>`;
  if(block.type==='table')return `<section class="lesson-section">${hdr}<div style="overflow-x:auto"><table class="explain-table"><thead><tr>${block.headers.map(x=>`<th scope="col">${rich(x)}</th>`).join('')}</tr></thead><tbody>${block.rows.map(r=>`<tr>${r.map(v=>`<td>${rich(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></section>`;
  if(block.type==='diagram')return renderVisual({type:'visual',title:block.title,variant:'flow',items:block.nodes.map(n=>({label:n[0],detail:n[1]})),caption:block.footer});
- if(block.type==='lab')return `<section class="lesson-section"><div class="lab-card"><div class="lab-tag">INTERACTIVE LAB · 疑似操作</div><div class="lab-header"><h4>${rich(block.title)}</h4></div><p class="lab-description">${rich(block.description)}</p><div id="lab-${block.kind}" data-lab-root="${block.kind}">${renderLab(block.kind)}</div><p class="lab-caution">※ ブラウザ内シミュレーション。実際のGit・Docker・pytest・MLflowコマンドは実行しない。</p></div></section>`;
+ if(block.type==='lab')return `<section class="lesson-section"><div class="lab-card">${!omitTitle?`<div class="lab-header"><h4>${rich(block.title)}</h4></div>`:''}<p class="lab-description">${rich(block.description)}</p><div id="lab-${block.kind}" data-lab-root="${block.kind}">${renderLab(block.kind)}</div><p class="lab-caution">※ 疑似操作。実際の開発環境には変更を加えない。</p></div></section>`;
  return '';
 }
 function scoreAsLabel(c){const n=bestQuiz(c);return n===null?'未受験':`最高 ${n}%`;}
 function shortTitle(title){
- return String(title).replace(/^[①②③④⑤⑥⑦⑧]\s*[^｜|]+[｜|]\s*/,'').replace(/^第[0-9０-９]+章\s*/,'').trim();
+ return String(title).replace(/^[①②③④⑤⑥⑦⑧]\s*[^｜|]+[｜|]\s*/,'').replace(/^第[0-9０-９]+章\s*[｜|]?\s*/,'').trim();
 }
 function stageGroups(course,current){
  return STAGES.map(stage=>{
@@ -82,20 +81,17 @@ function stageGroups(course,current){
  }).join('');
 }
 function stageMap(course){
- return `<section class="course-roadmap" aria-label="8章の学習マップ"><div class="roadmap-heading"><span class="visual-eyebrow">COURSE MAP</span><h2>この講座の進み方</h2><p>8章を通じて、必要性 → 仕組み → 操作 → 実際の活用を順に学ぶ。現在の章は色付きで表示。</p></div><div class="roadmap-grid">${STAGES.map(st=>{
+ return `<section class="course-roadmap" aria-label="8章の学習マップ"><div class="roadmap-heading"><h2>この講座の進み方</h2><p>8章を通じて、必要性 → 仕組み → 操作 → 実際の活用を順に学ぶ。現在の章は色付きで表示。</p></div><div class="roadmap-grid">${STAGES.map(st=>{
  const pages=course.pages.filter(p=>p.stage===st.id),target=pages[0];
  return `<button type="button" class="roadmap-item" data-action="go" data-course="${course.id}" data-page="${target.id}"><span class="roadmap-num">${String(st.id).padStart(2,'0')}</span><strong>${esc(st.name)}</strong><small>${esc(st.detail)}</small></button>`;
  }).join('')}</div></section>`;
 }
-function partLabel(block){
- return {visual:'図解で把握',diagram:'図解で把握',table:'比較して整理',text:'仕組みを確認',list:'要点を整理',code:'実行例を確認',lab:'操作して確認',note:'注意・補足'}[block.type]||'解説';
-}
 function orderedParts(page){
- const blocks=page.blocks||[];
- // 主要な図を説明の前に置き、最初に全体像を見せる。
- const firstVisual=blocks.findIndex(b=>b.type==='visual'||b.type==='diagram');
- const arranged=firstVisual>0?[blocks[firstVisual],...blocks.filter((_,i)=>i!==firstVisual)]:blocks;
- return arranged.map((block,i)=>`<div class="lesson-part lesson-part-${esc(block.type)}" aria-label="パート${i+1}"><div class="lesson-part-head"><span class="lesson-part-number">PART ${String(i+1).padStart(2,'0')}</span><span class="lesson-part-kind">${esc(partLabel(block))}</span></div>${renderBlock(block,i,undefined,page)}</div>`).join('');
+ const parts=page.parts||[];
+ return parts.map((blocks,partIndex)=>{
+  const firstTitle=blocks.find(b=>b.title)?.title||'解説';
+  return `<section class="lesson-part" aria-label="パート${partIndex+1}"><header class="lesson-part-head"><span class="lesson-part-number">PART ${String(partIndex+1).padStart(2,'0')}</span><h2 class="lesson-part-title">${rich(firstTitle)}</h2></header><div class="lesson-part-body">${blocks.map((block,index)=>renderBlock(block,`${partIndex}-${index}`,undefined,page,index===0)).join('')}</div></section>`;
+ }).join('');
 }
 function lesson(course,page){
  const pos=course.pages.findIndex(p=>p.id===page.id),last=pos===course.pages.length-1,done=progressFor(course),pct=Math.round(done/course.pages.length*100);
@@ -106,8 +102,8 @@ function lesson(course,page){
  const title=shortTitle(page.title);
  const previous=pos>0?`<button type="button" class="btn lesson-move previous" data-action="go" data-course="${course.id}" data-page="${course.pages[pos-1].id}"><span aria-hidden="true">←</span> 前のページへ</button>`:`<button type="button" class="btn lesson-move previous" disabled><span aria-hidden="true">←</span> 前のページへ</button>`;
  const next=last?`<button type="button" class="btn primary lesson-move next" disabled>次のページへ <span aria-hidden="true">→</span></button>`:`<button type="button" class="btn primary lesson-move next" data-action="complete" data-course="${course.id}" data-page="${page.id}">次のページへ <span aria-hidden="true">→</span></button>`;
- const takeaway=`<section class="lesson-conclusion" aria-label="このページの結論"><div class="lesson-conclusion-label"><span class="conclusion-dot" aria-hidden="true"></span>このページの結論</div><p>${rich(page.takeaway)}</p></section>`;
- return `<div class="frame lesson-frame">${header()}<div class="lesson-layout"><aside class="lesson-aside" aria-label="講座目次"><div class="lesson-aside-head"><div class="eyebrow">COURSE ${course.label}</div><div class="lesson-aside-title">${esc(course.name)} <span>・8章の目次</span></div><div class="progress" role="progressbar" aria-label="講座進捗" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><span style="width:${pct}%"></span></div><span class="small">${done} / ${course.pages.length} ページを完了</span></div><nav class="chapter-list" aria-label="章別目次">${chapterNav}</nav></aside><div class="lesson-right"><details class="mobile-chapters"><summary>目次を開く · 第${page.stage}章 ${esc(stage.name)} <span>⌄</span></summary><nav class="mobile-chapter-nav">${chapterNav}</nav></details><article class="lesson-surface" id="lessonReadingPane" tabindex="0" aria-label="教材本文"><div class="lesson-content"><div class="chapter-position"><span class="chapter-kicker">第${page.stage}章 ${esc(stage.name)}</span><span class="page-position">章内 ${stagePos} / ${stagePages.length} · 全体 ${pos+1} / ${course.pages.length}</span></div><h1 class="lesson-title">${rich(title)}</h1>${takeaway}${intro}${blockHtml}</div></article><nav class="lesson-toolbar" aria-label="ページ移動"><div class="toolbar-buttons">${previous}<span class="keyboard-nav-hint" aria-hidden="true">← → キーでページ移動</span>${next}</div></nav></div></div></div>`;
+ const takeaway=`<section class="lesson-conclusion" aria-label="このページの結論"><div class="lesson-conclusion-label"><span class="conclusion-dot" aria-hidden="true"></span>結論</div><p>${rich(page.takeaway)}</p></section>`;
+ return `<div class="frame lesson-frame">${header()}<div class="lesson-layout"><aside class="lesson-aside" aria-label="講座目次"><div class="lesson-aside-head"><div class="eyebrow">COURSE ${course.label}</div><div class="lesson-aside-title">${esc(course.name)} <span>・8章の目次</span></div><div class="progress" role="progressbar" aria-label="講座進捗" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><span style="width:${pct}%"></span></div><span class="small">${done} / ${course.pages.length} ページを完了</span></div><nav class="chapter-list" aria-label="章別目次">${chapterNav}</nav></aside><div class="lesson-right"><details class="mobile-chapters"><summary>目次を開く · 第${page.stage}章 ${esc(stage.name)} <span>⌄</span></summary><nav class="mobile-chapter-nav">${chapterNav}</nav></details><article class="lesson-surface" id="lessonReadingPane" tabindex="0" aria-label="教材本文"><div class="lesson-content"><div class="chapter-position"><span class="chapter-kicker">第${page.stage}章 ${esc(stage.name)}</span><span class="page-position">章内 ${stagePos} / ${stagePages.length} · 全体 ${pos+1} / ${course.pages.length}</span></div><h1 class="lesson-title">${rich(title)}</h1>${takeaway}${intro}${blockHtml}</div></article><nav class="lesson-toolbar" aria-label="ページ移動"><div class="toolbar-buttons">${previous}${next}</div></nav></div></div></div>`;
 }
 function labState(kind){
  state.labs??={};

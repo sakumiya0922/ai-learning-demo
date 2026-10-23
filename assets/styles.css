@@ -196,3 +196,27 @@ body:has(.lesson-frame){overflow:hidden}
 /* メッセージはナビゲーションのボタンに重ねない。 */
 .lesson-frame ~ .toast,body:has(.lesson-frame) .toast{bottom:auto;top:73px;right:20px}
 @media(max-width:820px){.keyboard-nav-hint{display:none}}
+
+/* v5: パートは意味のまとまり。色線や種類ラベルで区別しない */
+.lesson-conclusion{border-left:1px solid #cce8ed;box-shadow:none;background:#edf7fd}
+.lesson-conclusion-label{font-size:12px;letter-spacing:0}
+.lesson-part{border-top:1px solid #d6e3ec;border-left:0!important;padding:22px 0 28px;margin:0;}
+.lesson-part:first-of-type{border-top:1px solid #d6e3ec}
+.lesson-part-head{display:flex;align-items:baseline;flex-wrap:wrap;gap:13px;margin:0 0 17px;color:var(--ink)}
+.lesson-part-number{font-size:11px;font-weight:900;letter-spacing:.04em;color:#227caa;background:#edf6fc;padding:5px 9px;border-radius:6px;flex:0 0 auto}
+.lesson-part-title{font-size:clamp(20px,2vw,24px);font-weight:850;letter-spacing:-.035em;line-height:1.55;color:#162f4b;margin:0}
+.lesson-part-body{display:grid;gap:15px}
+.lesson-frame .lesson-part .lesson-section{margin:0}
+.lesson-frame .lesson-part .lesson-section h3{font-size:15px;line-height:1.6;margin:8px 0 9px;color:#315574;font-weight:750}
+.lesson-frame .lesson-part .visual-card{padding:20px;border:1px solid #cfe3f1}
+.lesson-frame .lesson-part .visual-card .visual-caption{margin-top:13px}
+.visual-variant-compare .visual-count{display:none}
+.lesson-part .part-note{border:1px solid #dfeaf1;background:#f6f9fc;border-radius:11px;padding:12px 15px;color:#46627b;font-size:13px;line-height:1.8}
+.lesson-part .part-note p{margin:0;font-size:13px;color:inherit}
+.lesson-part .part-note.is-warning{background:#fff9f0;border-color:#f0dab3;color:#815d30}
+.lesson-part .part-note.is-warning strong{display:block;margin-bottom:5px;font-size:12px}
+.lesson-frame .lesson-part .lab-card{margin:0}
+@media(max-width:820px){.lesson-part{padding:18px 0 23px}.lesson-part-title{font-size:19px}.lesson-frame .lesson-part .visual-card{padding:14px 12px}}
+
+/* ページ移動ボタン間の飾りテキストは設置しない。 */
+.lesson-frame .toolbar-buttons{justify-content:space-between}
