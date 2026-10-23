@@ -1,6 +1,6 @@
 # Neural Daylight — 機械学習開発を学ぶWeb教材
 
-Git・Docker・pytest・MLflowの基礎を、**図解・操作例・理解度テスト**で学べるWeb教材です。
+Git・Docker・pytest・MLflowの基礎を、**章別の図解・操作例・理解度テスト**で学べるWeb教材です。
 
 ### [▶ Web教材を体験する](https://sakumiya0922.github.io/ml-engineering-learning-lab/)
 
@@ -8,7 +8,7 @@ Git・Docker・pytest・MLflowの基礎を、**図解・操作例・理解度テ
 
 ## できること
 
-- Gitを含む4講座（**全74ページ**）を、ページ送りで学べる
+- Gitを含む4講座（**全77ページ**）を、8章に分けた目次とページ送りで学べる
 - 操作例や疑似シミュレーションで仕組みを確認できる
 - 講座の最後に知識問題で理解度を確認できる
 - 学習進捗をブラウザに保存し、JSONで出力できる
