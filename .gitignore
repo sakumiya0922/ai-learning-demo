@@ -1,0 +1,16 @@
+# 開発PC固有の生成物
+.DS_Store
+Thumbs.db
+
+# Node.jsやテストで生成されるもの
+node_modules/
+coverage/
+*.log
+
+# ローカルの秘密情報
+.env
+.env.*
+!.env.example
+
+# 配布用の圧縮ファイル
+*.zip
