@@ -1,9 +1,9 @@
 {
-  "name": "neural-daylight-courses",
+  "name": "ml-engineering-learning-lab",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Static GitHub Pages learning portal for Git, Docker, pytest and MLflow",
+  "description": "Neural Daylight static learning portal for Git, Docker, pytest and MLflow",
   "scripts": {
     "test": "node --test tests/*.test.js"
   }

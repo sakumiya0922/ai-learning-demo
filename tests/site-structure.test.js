@@ -7,7 +7,7 @@ import { resolve, dirname } from 'node:path';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = path => readFileSync(resolve(root, path), 'utf8');
 
-test('GitHub Pages entry and resources are retained at stable paths', () => {
+test('GitHub Pages entry and static resources are present', () => {
   const html = read('index.html');
   assert.match(html, /<meta charset="UTF-8">/);
   for (const p of ['assets/styles.css', 'assets/favicon.svg', 'src/app.js']) {
@@ -16,17 +16,27 @@ test('GitHub Pages entry and resources are retained at stable paths', () => {
   }
 });
 
-test('courses and old demo remain accessible', () => {
+test('course modules, storage and design specification are present', () => {
   const paths = [
     'src/courses/git.js', 'src/courses/docker.js',
     'src/courses/pytest.js', 'src/courses/mlflow.js',
-    'src/storage.js', 'legacy-demo.html', 'docs/教材設計書.md'
+    'src/courses/index.js', 'src/storage.js', 'docs/教材設計書.md'
   ];
   for (const p of paths) assert.ok(existsSync(resolve(root, p)), `Missing ${p}`);
-  assert.match(read('src/app.js'), /href="legacy-demo\.html"/);
 });
 
-test('repository organization uses dedicated operational folders', () => {
-  assert.ok(existsSync(resolve(root, 'scripts/publish-to-github.sh')));
+test('unused prototype pages and one-time deployment script are removed', () => {
+  for (const p of ['legacy-demo.html', 'legacy-demo-original.html',
+    'archive/legacy-demo-original.html', 'scripts/publish-to-github.sh']) {
+    assert.ok(!existsSync(resolve(root, p)), `Unused file remains: ${p}`);
+  }
+  assert.doesNotMatch(read('src/app.js'), /legacy-demo\.html/);
+});
+
+test('new repository name and Pages URL are used in README', () => {
+  const readme = read('README.md');
+  assert.match(readme, /sakumiya0922\/ml-engineering-learning-lab/);
+  assert.doesNotMatch(readme, /https:\/\/sakumiya0922\.github\.io\/ai-learning-demo/);
   assert.ok(existsSync(resolve(root, '.gitignore')));
+  assert.ok(existsSync(resolve(root, '.nojekyll')));
 });
