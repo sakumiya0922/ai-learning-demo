@@ -1,11 +1,11 @@
-import {gitCourse} from './git.js?v=5';
-import {dockerCourse} from './docker.js?v=5';
-import {pytestCourse} from './pytest.js?v=5';
-import {mlflowCourse} from './mlflow.js?v=5';
-import {enrichWithVisuals} from './visuals.js?v=5';
-import {withKeypoints} from './keypoints.js?v=5';
-import {withDeclarativeVoice} from './editorial.js?v=5';
-import {organizeCourse} from './parts.js?v=5';
+import {gitCourse} from './git.js?v=6';
+import {dockerCourse} from './docker.js?v=6';
+import {pytestCourse} from './pytest.js?v=6';
+import {mlflowCourse} from './mlflow.js?v=6';
+import {enrichWithVisuals} from './visuals.js?v=6';
+import {withKeypoints} from './keypoints.js?v=6';
+import {withDeclarativeVoice} from './editorial.js?v=6';
+import {organizeCourse} from './parts.js?v=6';
 
 export const STAGES = [
  {id:1,name:'達成目標',short:'達成目標',detail:'この講座のゴールと全体の学習順序を確認する'},

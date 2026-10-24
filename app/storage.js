@@ -78,7 +78,7 @@ export async function clearLearning(){
 }
 export async function exportLearning(state){
  const events=await getEvents();
- const data={format:'neural-daylight-dev-courses',version:2,exportedAt:new Date().toISOString(),profile:{alias:state.alias},completed:state.completed,quizAttempts:state.quizAttempts,labs:state.labs,courseRevisions:state.courseRevisions,archivedCourseProgress:state.archivedCourseProgress,events:events.filter(x=>['page-completed','quiz-submitted','lab-action','learning-reset'].includes(x.type))};
+ const data={format:'neural-daylight-dev-courses',version:2,exportedAt:new Date().toISOString(),profile:{alias:state.alias},completed:state.completed,quizAttempts:state.quizAttempts,labs:state.labs,demos:state.demos||{},courseRevisions:state.courseRevisions,archivedCourseProgress:state.archivedCourseProgress,events:events.filter(x=>['page-completed','quiz-submitted','lab-action','demo-action','learning-reset'].includes(x.type))};
  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'});
  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='neural-daylight-learning-records.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }

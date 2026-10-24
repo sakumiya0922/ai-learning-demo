@@ -1,5 +1,8 @@
-import {COURSES,getCourse,STAGES,getStage} from '../courses/index.js?v=5';
-import {loadApp,saveApp,addEvent,getEvents,exportLearning,clearLearning,isPersistent} from './storage.js';
+import {createDemo,stepDemo,DEMO_SCHEMA} from './demo-state.js?v=6';
+import {renderDemo} from './demo-view.js?v=6';
+import {demoFor} from '../courses/demo-map.js?v=6';
+import {COURSES,getCourse,STAGES,getStage} from '../courses/index.js?v=6';
+import {loadApp,saveApp,addEvent,getEvents,exportLearning,clearLearning,isPersistent} from './storage.js?v=6';
 
 const root=document.getElementById('app');
 let state=null;
@@ -23,24 +26,24 @@ function navigate(path){if(location.hash==='#/'+path){render();window.scrollTo({
 function icon(c){return `<span class="course-icon ${esc(c.id)}" aria-hidden="true">${esc(c.symbol)}</span>`;}
 function header(){return `<header class="site-top"><div class="site-top-inner"><a class="logo" href="#/dashboard" aria-label="学習ポータルへ"><span class="logo-mark">◈</span><span>Neural <em>Daylight</em></span></a><div class="top-actions"><span class="user-chip" title="ローカル学習者">${esc(state.alias)}</span><button class="btn compact ghost" data-action="export">記録を出力 ↗</button><button class="btn compact soft" data-action="logout">入口へ</button></div></div></header>`;}
 function footer(){return `<footer class="bottom-footer">© 2026 Neural Daylight · 学習用ポートフォリオデモ。学習履歴はこのブラウザのIndexedDBに保存され、端末間で自動同期されません。<br>Git・Docker・pytest・MLflowは各プロジェクトの商標です。この教材は独立した解説・シミュレーションであり、公式教材ではありません。</footer>`;}
-function welcome(){return `<div class="welcome"><canvas class="network-canvas" id="networkCanvas" aria-hidden="true"></canvas><header class="header"><span class="logo"><span class="logo-mark">◈</span><span>Neural <em>Daylight</em></span></span><span class="pill green">AI ENGINEERING · LEARNING SPACE</span></header><main class="welcome-main"><section class="welcome-copy"><div class="eyebrow">THE DEVELOPER'S LEARNING SPACE</div><h1>学ぶ技術を、<br><em>使える知識</em>へ。</h1><p>機械学習開発を支える4つの技術を、仕組みから理解する。読むだけで終わらない、図解と疑似操作で進むWeb教材。</p><div class="welcome-chips"><span>⑂ Git</span><span>▣ Docker</span><span>✓ pytest</span><span>◈ MLflow</span></div></section><section class="welcome-panel"><div class="welcome-badge">WELCOME TO THE LAB</div><h2>学習をはじめる</h2><p class="subtitle">学習者名を入力すると、専用の学習ポータルを開きます。パスワードやアカウント登録は必要ありません。</p><form id="enter-form"><label class="label" for="learnerName">学習者名（この端末内の表示名）</label><input class="field" type="text" id="learnerName" maxlength="30" placeholder="例：Learner" value="${esc(state?.alias||'')}" autocomplete="off"><div style="height:17px"></div><button type="submit" class="btn primary wide">学習ポータルを開く <span aria-hidden="true">→</span></button></form><p class="welcome-disclaimer">これは学習記録のローカル体験画面です。本人認証やサーバーへのログインは行いません。入力した名前と学習履歴はこのブラウザに保存されます。</p></section></main><div class="welcome-footer">A hands-on learning portfolio · GitHub Pages</div></div>`;}
+function welcome(){return `<div class="welcome"><canvas class="network-canvas" id="networkCanvas" aria-hidden="true"></canvas><header class="header"><span class="logo"><span class="logo-mark">◈</span><span>Neural <em>Daylight</em></span></span><span class="pill green">AI ENGINEERING · LEARNING SPACE</span></header><main class="welcome-main"><section class="welcome-copy"><div class="eyebrow">THE DEVELOPER'S LEARNING SPACE</div><h1>学ぶ技術を、<br><em>使える知識</em>へ。</h1><p>機械学習開発を支える4つの技術を、仕組みから理解する。読むだけで終わらない、図解と疑似操作で進むWeb教材。</p><div class="welcome-chips"><span>⑂ Git</span><span>▣ Docker</span><span>✓ pytest</span><span>◈ MLflow</span></div></section><section class="welcome-panel"><div class="welcome-badge">WELCOME TO THE LAB</div><h2>学習をはじめる</h2><p class="subtitle">表示名だけで学習を開始。アカウント登録は不要。</p><form id="enter-form"><label class="label" for="learnerName">学習者名（この端末内の表示名）</label><input class="field" type="text" id="learnerName" maxlength="30" placeholder="例：Learner" value="${esc(state?.alias||'')}" autocomplete="off"><div style="height:17px"></div><button type="submit" class="btn primary wide">学習ポータルを開く <span aria-hidden="true">→</span></button></form><p class="welcome-disclaimer">表示名と学習履歴はこのブラウザ内に保存。本人認証・端末間同期はなし。</p></section></main><div class="welcome-footer">A hands-on learning portfolio · GitHub Pages</div></div>`;}
 function dashboard(){
  const {done,total}=overall();const percent=Math.round(done/total*100);const passed=COURSES.filter(c=>(bestQuiz(c)||0)>=70).length;
  const rows=COURSES.map(c=>{const d=progressFor(c),pct=Math.round(d/c.pages.length*100),best=bestQuiz(c),complete=pct===100;return `<article class="course-card card"><div class="course-head">${icon(c)}<span class="pill ${complete?'green':d?'':'gray'}">${complete?'修了':d?'学習中':'未開始'}</span></div><div><div class="eyebrow">COURSE ${c.label}</div><h3>${esc(c.name)}</h3></div><p>${esc(c.description)}</p><div class="progress" role="progressbar" aria-label="${esc(c.name)}の進捗" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><span style="width:${pct}%"></span></div><div class="course-bottom"><div class="course-meta"><span>${d} / ${c.pages.length} ページ</span><span>約${c.minutes}分</span>${best!==null?`<span>最高 ${best}%</span>`:''}</div><button class="btn soft compact" data-action="open-course" data-course="${c.id}">${d?'続きを学ぶ':'学習を始める'} →</button></div></article>`;}).join('');
- return `<div class="frame">${header()}<main class="container"><div class="crumb"><span>学習ポータル</span><span>›</span><span>ダッシュボード</span></div><div class="dash-hero"><section class="dash-hero-main"><div class="eyebrow">YOUR LEARNING JOURNEY</div><h1>おかえりなさい、<br>${esc(state.alias)} さん。</h1><p>Git・Docker・pytest・MLflowを体系的に学びます。各講座はページ単位で進み、最後の理解度テストで成果を確認できます。</p><button class="btn primary" data-action="open-course" data-course="${COURSES.find(c=>progressFor(c)<c.pages.length)?.id||'git'}">${done?'学習を再開':'最初の講座へ'} →</button></section><section class="dash-summary card"><div class="eyebrow">LEARNING PROGRESS</div><div class="summary-row"><strong class="big">${percent}%</strong><span class="pill ${percent===100?'green':''}">${done} / ${total} ページ</span></div><div class="progress" role="progressbar" aria-label="全体進捗" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100"><span style="width:${percent}%"></span></div><div class="summary-row"><span class="metric-label">理解度テスト合格</span><strong>${passed} / 4 講座</strong></div><span class="tiny">ページ完了とテスト結果はブラウザに記録されます。</span></section></div><div class="section-bar"><div><div class="eyebrow">COURSE LIBRARY</div><h2>学習カリキュラム</h2></div><span class="pill">4講座 · ${total}ページ · ${COURSES.reduce((n,c)=>n+c.quiz.length,0)}問</span></div><div class="course-grid">${rows}</div><div class="dash-overview"><section class="overview-card card"><h3>この教材で身につくこと</h3><div class="over-list"><div class="over-item">◈ <b>Git</b>：コードの変更を追跡する</div><div class="over-item">◈ <b>Docker</b>：実行環境を再現する</div><div class="over-item">◈ <b>pytest</b>：コードの動作を検証する</div><div class="over-item">◈ <b>MLflow</b>：実験条件・評価指標・モデルを記録する</div></div></section><section class="overview-card card"><h3>学習履歴について</h3><p class="muted" style="font-size:12px;line-height:1.9">このサイトはGitHub Pagesで動作しています。学習状況はブラウザのIndexedDBに保存され、サーバー側で個人別の成績を集計する仕組みはありません。</p><div class="course-links"><button class="btn compact soft" data-action="export">学習記録をJSONで出力</button><button class="btn compact danger" data-action="clear">この教材の記録をリセット</button></div><p class="tiny">${isPersistent()?'現在の保存状態：IndexedDBを利用中':'現在の保存状態：ブラウザ内の一時メモリ（永続化不可）'}</p></section></div></main>${footer()}</div>`;
+ return `<div class="frame">${header()}<main class="container"><div class="crumb"><span>学習ポータル</span><span>›</span><span>ダッシュボード</span></div><div class="dash-hero"><section class="dash-hero-main"><div class="eyebrow">機械学習開発の基礎</div><h1>仕組みから、<br>使い方まで。</h1><p>仕組みを読み、操作で確かめる。4講座を自分のペースで学習。</p><button class="btn primary" data-action="open-course" data-course="${COURSES.find(c=>progressFor(c)<c.pages.length)?.id||'git'}">${done?'学習を再開':'最初の講座へ'} →</button></section><section class="dash-summary card"><div class="eyebrow">学習の進捗</div><div class="summary-row"><strong class="big">${percent}%</strong><span class="pill ${percent===100?'green':''}">${done} / ${total} ページ</span></div><div class="progress" role="progressbar" aria-label="全体進捗" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100"><span style="width:${percent}%"></span></div><div class="summary-row"><span class="metric-label">理解度テスト合格</span><strong>${passed} / 4 講座</strong></div><span class="tiny">ページ完了・採点結果をブラウザに保存。</span></section></div><div class="section-bar"><div><div class="eyebrow"></div><h2>学習カリキュラム</h2></div><span class="pill">4講座 · ${total}ページ · ${COURSES.reduce((n,c)=>n+c.quiz.length,0)}問</span></div><div class="course-grid">${rows}</div><div class="dash-overview"><section class="overview-card card"><h3>この教材で身につくこと</h3><div class="over-list"><div class="over-item">◈ <b>Git</b>：コードの変更を追跡する</div><div class="over-item">◈ <b>Docker</b>：実行環境を再現する</div><div class="over-item">◈ <b>pytest</b>：コードの動作を検証する</div><div class="over-item">◈ <b>MLflow</b>：実験条件・評価指標・モデルを記録する</div></div></section><section class="overview-card card"><h3>学習履歴について</h3><p class="muted" style="font-size:12px;line-height:1.9">学習状況はこのブラウザ内に保存。端末間同期やサーバー側の成績集計はなし。</p><div class="course-links"><button class="btn compact soft" data-action="export">学習記録をJSONで出力</button><button class="btn compact danger" data-action="clear">この教材の記録をリセット</button></div><p class="tiny">${isPersistent()?'現在の保存状態：IndexedDBを利用中':'現在の保存状態：ブラウザ内の一時メモリ（永続化不可）'}</p></section></div></main>${footer()}</div>`;
 }
 function renderVisual(block){
  const items=block.items||[];
  const caption=block.caption?`<p class="visual-caption">${rich(block.caption)}</p>`:'';
  const type=block.variant||'flow';
- const cell=(item,i)=>`<div class="visual-cell"><span class="visual-count">${String(i+1).padStart(2,'0')}</span><strong>${rich(item.label)}</strong><p>${rich(item.detail)}</p></div>`;
+ const cell=(item,i)=>`<div class="visual-cell"><strong>${rich(item.label)}</strong><p>${rich(item.detail)}</p></div>`;
  let figure='';
  if(type==='folders'){
   figure=`<div class="visual-filetree">${items.map((item,i)=>`<div class="visual-file"><span aria-hidden="true">${i===0?'▣':item.label.includes('/')?'▤':'▤'}</span><strong>${rich(item.label)}</strong><span>${rich(item.detail)}</span></div>`).join('')}</div>`;
  }else if(type==='branch'){
   figure=`<div class="visual-branch-graph" aria-hidden="true"><svg viewBox="0 0 660 150" preserveAspectRatio="xMidYMid meet"><path d="M54 44H270Q300 44 328 78H590" class="branch-upper"/><path d="M270 44Q302 44 329 112H590" class="branch-lower"/><circle cx="54" cy="44" r="12"/><circle cx="178" cy="44" r="12"/><circle cx="270" cy="44" r="12"/><circle cx="392" cy="78" r="12"/><circle cx="590" cy="78" r="12"/><circle cx="392" cy="112" r="12"/><circle cx="590" cy="112" r="12" class="branch-feature"/></svg></div><div class="visual-comparisons">${items.map((item,i)=>`<div class="visual-branch-item"><span class="visual-branch-dot ${i===1?'alt':''}"></span><div><strong>${rich(item.label)}</strong><p>${rich(item.detail)}</p></div></div>`).join('')}</div>`;
  }else if(type==='compare'){
-  figure=`<div class="visual-comparisons">${items.map((item,i)=>`<div class="visual-compare"><span class="visual-count">${String(i+1).padStart(2,'0')}</span><strong>${rich(item.label)}</strong><p>${rich(item.detail)}</p></div>`).join('')}</div>`;
+  figure=`<div class="visual-comparisons">${items.map((item,i)=>`<div class="visual-compare"><strong>${rich(item.label)}</strong><p>${rich(item.detail)}</p></div>`).join('')}</div>`;
  }else if(type==='zones'){
   figure=`<div class="visual-zones">${items.map((item,i)=>`${i?'<span class="visual-flow-arrow" aria-hidden="true">→</span>':''}${cell(item,i)}`).join('')}</div>`;
  }else if(type==='objects'){
@@ -81,29 +84,63 @@ function stageGroups(course,current){
  }).join('');
 }
 function stageMap(course){
- return `<section class="course-roadmap" aria-label="8章の学習マップ"><div class="roadmap-heading"><h2>この講座の進み方</h2><p>8章を通じて、必要性 → 仕組み → 操作 → 実際の活用を順に学ぶ。現在の章は色付きで表示。</p></div><div class="roadmap-grid">${STAGES.map(st=>{
+ return `<section class="course-roadmap" aria-label="8章の学習マップ"><div class="roadmap-heading"><h2><span class="section-marker" aria-hidden="true"></span>講座の構成</h2><p>8章を通じて、必要性 → 仕組み → 操作 → 実際の活用を順に学ぶ。各章の項目から移動。</p></div><div class="roadmap-grid">${STAGES.map(st=>{
  const pages=course.pages.filter(p=>p.stage===st.id),target=pages[0];
  return `<button type="button" class="roadmap-item" data-action="go" data-course="${course.id}" data-page="${target.id}"><span class="roadmap-num">${String(st.id).padStart(2,'0')}</span><strong>${esc(st.name)}</strong><small>${esc(st.detail)}</small></button>`;
  }).join('')}</div></section>`;
 }
-function orderedParts(page){
- const parts=page.parts||[];
+function demoState(course,page,config){
+ state.demos??={};
+ const key=course.id+'/'+page.id;
+ if(!state.demos[key]||state.demos[key].schema!==DEMO_SCHEMA||state.demos[key].kind!==config.kind)state.demos[key]=createDemo(config.kind);
+ return state.demos[key];
+}
+function orderedParts(page,course){
+ const parts=page.parts||[], config=demoFor(course.id,page.id);
+ // Replace an illustrative figure with its interactive equivalent, not the written explanation.
+ let target=config?parts.findIndex(blocks=>blocks.some(b=>b.type==='lab')):-1;
+ if(config&&target<0)target=parts.findIndex(blocks=>blocks.some(b=>['visual','diagram'].includes(b.type)));
+ if(config&&target<0)target=0;
  return parts.map((blocks,partIndex)=>{
-  const firstTitle=blocks.find(b=>b.title)?.title||'解説';
-  return `<section class="lesson-part" aria-label="パート${partIndex+1}"><header class="lesson-part-head"><span class="lesson-part-number">PART ${String(partIndex+1).padStart(2,'0')}</span><h2 class="lesson-part-title">${rich(firstTitle)}</h2></header><div class="lesson-part-body">${blocks.map((block,index)=>renderBlock(block,`${partIndex}-${index}`,undefined,page,index===0)).join('')}</div></section>`;
+  const interactive=config&&partIndex===target;
+  const firstTitle=interactive?config.title:(blocks.find(b=>b.title)?.title||'解説');
+  let body='';
+  if(interactive)body=`<div class="interactive-demo" data-demo-root="${esc(course.id+'/'+page.id)}" data-demo-course="${esc(course.id)}" data-demo-page="${esc(page.id)}">${renderDemo(demoState(course,page,config),config)}</div>`;
+  body+=blocks.map((block,index)=>{
+   if(interactive&&['visual','diagram','lab'].includes(block.type))return '';
+   const omit=!interactive&&block.title===firstTitle;
+   return renderBlock(block,`${partIndex}-${index}`,course,page,omit);
+  }).join('');
+  return `<section class="lesson-part" aria-label="${esc(firstTitle)}"><header class="lesson-part-head"><span class="section-marker" aria-hidden="true"></span><h2 class="lesson-part-title">${rich(firstTitle)}</h2></header><div class="lesson-part-body">${body}</div></section>`;
  }).join('');
+}
+async function handleDemo(target,payload){
+ const host=target.closest('[data-demo-root]');if(!host)return;
+ const course=getCourse(host.dataset.demoCourse),page=course?.pages.find(p=>p.id===host.dataset.demoPage);
+ if(!course||!page)return;
+ const config=demoFor(course.id,page.id);if(!config)return;
+ const key=course.id+'/'+page.id, op=target.dataset.op||target.dataset.demoChange;
+ const value=payload??target.dataset.value??'';
+ const before=demoState(course,page,config);
+ state.demos[key]=stepDemo(before,op,value);
+ // Rendering stays local to the demo: the reader's scroll position and TOC remain untouched.
+ host.innerHTML=renderDemo(state.demos[key],config);
+ const nextControl=[...host.querySelectorAll('[data-op], [data-demo-change]')].find(el=>(el.dataset.op||el.dataset.demoChange)===op&&(el.dataset.value||'')===(target.dataset.value||''));
+ if(nextControl&&!nextControl.disabled)nextControl.focus({preventScroll:true});
+ await saveApp(state);
+ await addEvent('demo-action',{course:course.id,page:page.id,kind:config.kind,op});
 }
 function lesson(course,page){
  const pos=course.pages.findIndex(p=>p.id===page.id),last=pos===course.pages.length-1,done=progressFor(course),pct=Math.round(done/course.pages.length*100);
  const stage=getStage(page.stage),stagePages=course.pages.filter(p=>p.stage===page.stage),stagePos=stagePages.indexOf(page)+1;
  const chapterNav=stageGroups(course,page);
- const blockHtml=last?renderQuiz(course):orderedParts(page);
+ const blockHtml=last?renderQuiz(course):orderedParts(page,course);
  const intro=pos===0?stageMap(course):'';
  const title=shortTitle(page.title);
  const previous=pos>0?`<button type="button" class="btn lesson-move previous" data-action="go" data-course="${course.id}" data-page="${course.pages[pos-1].id}"><span aria-hidden="true">←</span> 前のページへ</button>`:`<button type="button" class="btn lesson-move previous" disabled><span aria-hidden="true">←</span> 前のページへ</button>`;
  const next=last?`<button type="button" class="btn primary lesson-move next" disabled>次のページへ <span aria-hidden="true">→</span></button>`:`<button type="button" class="btn primary lesson-move next" data-action="complete" data-course="${course.id}" data-page="${page.id}">次のページへ <span aria-hidden="true">→</span></button>`;
  const takeaway=`<section class="lesson-conclusion" aria-label="このページの結論"><div class="lesson-conclusion-label"><span class="conclusion-dot" aria-hidden="true"></span>結論</div><p>${rich(page.takeaway)}</p></section>`;
- return `<div class="frame lesson-frame">${header()}<div class="lesson-layout"><aside class="lesson-aside" aria-label="講座目次"><div class="lesson-aside-head"><div class="eyebrow">COURSE ${course.label}</div><div class="lesson-aside-title">${esc(course.name)} <span>・8章の目次</span></div><div class="progress" role="progressbar" aria-label="講座進捗" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><span style="width:${pct}%"></span></div><span class="small">${done} / ${course.pages.length} ページを完了</span></div><nav class="chapter-list" aria-label="章別目次">${chapterNav}</nav></aside><div class="lesson-right"><details class="mobile-chapters"><summary>目次を開く · 第${page.stage}章 ${esc(stage.name)} <span>⌄</span></summary><nav class="mobile-chapter-nav">${chapterNav}</nav></details><article class="lesson-surface" id="lessonReadingPane" tabindex="0" aria-label="教材本文"><div class="lesson-content"><div class="chapter-position"><span class="chapter-kicker">第${page.stage}章 ${esc(stage.name)}</span><span class="page-position">章内 ${stagePos} / ${stagePages.length} · 全体 ${pos+1} / ${course.pages.length}</span></div><h1 class="lesson-title">${rich(title)}</h1>${takeaway}${intro}${blockHtml}</div></article><nav class="lesson-toolbar" aria-label="ページ移動"><div class="toolbar-buttons">${previous}${next}</div></nav></div></div></div>`;
+ return `<div class="frame lesson-frame">${header()}<div class="lesson-layout"><aside class="lesson-aside" aria-label="講座目次"><div class="lesson-aside-head"><a class="back-to-library" href="#/dashboard">← 講座一覧</a><div class="lesson-aside-title">${esc(course.name)} <span>8章</span></div><div class="progress" role="progressbar" aria-label="講座進捗" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><span style="width:${pct}%"></span></div><span class="small">${done} / ${course.pages.length} ページを完了</span></div><nav class="chapter-list" aria-label="章別目次">${chapterNav}</nav></aside><div class="lesson-right"><details class="mobile-chapters"><summary>目次を開く · 第${page.stage}章 ${esc(stage.name)} <span>⌄</span></summary><nav class="mobile-chapter-nav">${chapterNav}</nav></details><article class="lesson-surface" id="lessonReadingPane" tabindex="0" aria-label="教材本文"><div class="lesson-content"><div class="chapter-position"><span class="chapter-kicker">第${page.stage}章 ${esc(stage.name)}</span><span class="page-position">章内 ${stagePos} / ${stagePages.length}　${pos+1} / ${course.pages.length}ページ</span></div><h1 class="lesson-title">${rich(title)}</h1>${takeaway}${intro}${blockHtml}</div></article><nav class="lesson-toolbar" aria-label="ページ移動"><div class="toolbar-buttons">${previous}${next}</div></nav></div></div></div>`;
 }
 function labState(kind){
  state.labs??={};
@@ -126,7 +163,7 @@ function renderQuiz(course){
  return `<form id="quiz-form" class="quiz-form" data-course="${course.id}"><p class="note">全${course.quiz.length}問。すべて回答してから採点。採点結果と解説は最後にまとめて表示。</p>${course.quiz.map((q,i)=>`<fieldset class="quiz-question" style="min-width:0"><legend class="quiz-index">QUESTION ${String(i+1).padStart(2,'0')}</legend><h3 id="question-${i}">${rich(q.prompt)}</h3>${q.choices.map((choice,j)=>`<label class="quiz-option"><input type="radio" name="q-${i}" value="${j}" aria-describedby="question-${i}"><span>${rich(choice)}</span></label>`).join('')}</fieldset>`).join('')}<div class="quiz-submit-row"><button type="submit" class="btn primary">採点する</button></div></form>`;
 }
 function showToast(message){let el=document.getElementById('toast');if(!el){el=document.createElement('div');el.id='toast';el.className='toast';el.setAttribute('role','status');document.body.append(el);}el.textContent=message;el.hidden=false;clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>{el.hidden=true;},3600);}
-function render(){stopNetwork();const r=route();document.title=r.view==='lesson'?`${r.page.title} | ${r.course.name} · Neural Daylight`:r.view==='welcome'?'Neural Daylight | 機械学習開発を学ぶ':'学習ポータル | Neural Daylight';root.innerHTML=r.view==='welcome'?welcome():r.view==='lesson'?lesson(r.course,r.page):dashboard();if(r.view==='welcome')stopNetwork=startNetwork();}
+function render(){stopNetwork();const r=route();document.body.dataset.view=r.view;document.documentElement.dataset.ui='6';document.title=r.view==='lesson'?`${r.page.title} | ${r.course.name} · Neural Daylight`:r.view==='welcome'?'Neural Daylight | 機械学習開発を学ぶ':'学習ポータル | Neural Daylight';root.innerHTML=r.view==='welcome'?welcome():r.view==='lesson'?lesson(r.course,r.page):dashboard();if(r.view==='welcome')stopNetwork=startNetwork();}
 async function handleLab(button){
  const kind=button.dataset.lab,op=button.dataset.op,s=labState(kind);
  if(kind==='git'){
@@ -175,7 +212,7 @@ function navigateWithArrow(event){
  if(event.key!=='ArrowLeft'&&event.key!=='ArrowRight')return;
  if(event.altKey||event.ctrlKey||event.metaKey||event.shiftKey||event.repeat||event.isComposing||event.defaultPrevented)return;
  const target=event.target;
- if(target instanceof Element&&target.closest('input, textarea, select, [contenteditable="true"], [role="radio"], [role="slider"], summary'))return;
+ if(target instanceof Element&&target.closest('input, textarea, select, [contenteditable="true"], [role="radio"], [role="slider"], summary, [data-demo-root]'))return;
  if(window.getSelection()?.toString())return;
  const current=route();if(current.view!=='lesson')return;
  const index=current.course.pages.findIndex(p=>p.id===current.page.id);
@@ -190,14 +227,15 @@ root.addEventListener('click',async e=>{
  if(action==='open-course'&&course){navigate('course/'+course.id+'/'+nextPage(course).id);return;}
  if(action==='go'&&course){navigate('course/'+course.id+'/'+target.dataset.page);return;}
  if(action==='complete'&&course){const p=course.pages.find(item=>item.id===target.dataset.page);if(p)await completeAndAdvance(course,p);return;}
- if(action==='copy'){const el=document.getElementById(target.dataset.copyId);if(!el)return;try{await navigator.clipboard.writeText(el.textContent);showToast('コードをコピーしました。');}catch(err){showToast('コピーできませんでした。コードを選択してコピーしてください。');}return;}
+ if(action==='copy'){const el=document.getElementById(target.dataset.copyId);if(!el)return;try{await navigator.clipboard.writeText(el.textContent);showToast('コードをコピー。');}catch(err){showToast('コピーできませんでした。コードを選択してコピーしてください。');}return;}
+ if(action==='demo'){await handleDemo(target);return;}
  if(action==='lab'){await handleLab(target);return;}
- if(action==='export'){await exportLearning(state);showToast('学習記録をJSONで出力しました。');return;}
+ if(action==='export'){await exportLearning(state);showToast('学習記録をJSONで出力。');return;}
  if(action==='logout'){state.alias='';await saveApp(state);navigate('welcome');return;}
  if(action==='retake'&&course){currentQuizMode[course.id]='retake';render();window.scrollTo({top:0,behavior:'instant'});return;}
- if(action==='clear'){if(!confirm('4講座の進捗・テスト結果・疑似操作の記録をリセットしますか？（以前のPythonデモの履歴は維持します）'))return;const a=state.alias;state=await clearLearning();state.alias=a;await saveApp(state);showToast('学習状況をリセットしました。');render();return;}
+ if(action==='clear'){if(!confirm('4講座の進捗・テスト結果・疑似操作の記録をリセットしますか？（旧デモの履歴は維持）'))return;const a=state.alias;state=await clearLearning();state.alias=a;await saveApp(state);showToast('学習状況をリセット。');render();return;}
 });
-root.addEventListener('change',e=>{const el=e.target;if(el.id==='pageSelect'){const c=getCourse(el.dataset.course);if(c)navigate('course/'+c.id+'/'+el.value);}});
+root.addEventListener('change',async e=>{const el=e.target;if(el.matches('[data-demo-change]')){await handleDemo(el,el.dataset.value||el.value);return;}if(el.id==='pageSelect'){const c=getCourse(el.dataset.course);if(c)navigate('course/'+c.id+'/'+el.value);}});
 root.addEventListener('submit',async e=>{
  if(e.target.id==='enter-form'){e.preventDefault();const alias=document.getElementById('learnerName').value.trim().slice(0,30)||'Learner';state.alias=alias;await saveApp(state);navigate('dashboard');return;}
  if(e.target.id==='quiz-form'){

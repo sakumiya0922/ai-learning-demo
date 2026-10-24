@@ -35,8 +35,8 @@ test('all pages show one prominent conclusion before their detailed parts',()=>{
  assert.match(lesson,/lesson-conclusion/);
  assert.match(lesson,/このページの結論/);
  assert.ok(lesson.indexOf('takeaway')<lesson.indexOf('blockHtml}</div></article>'));
- assert.match(app,/lesson-part-number/);
- assert.match(app,/PART /);
+ assert.match(app,/section-marker/);
+ assert.doesNotMatch(app,/PART \$|PART \d|lesson-part-number/);
 });
 
 test('consistent navigation labels and borderless toolbar',()=>{
@@ -59,18 +59,28 @@ test('left and right arrow navigation avoids form controls and page overrun',()=
  assert.match(app,/event.key==='ArrowRight'&&index<current.course.pages.length-1/);
 });
 
-test('parts show only a number and a meaningful title',()=>{
+test('sections show a marker and a meaningful title without numbering',()=>{
  const app=read('app/main.js');
  assert.doesNotMatch(app,/VISUAL GUIDE|function partLabel\(/);
  assert.doesNotMatch(app,/PART \${String\(i\+1\)/);
  assert.match(app,/lesson-part-title/);
  assert.match(app,/renderBlock\(block,`\${partIndex}-\${index}`/);
  const css=read('assets/styles.css');
- assert.match(css,/\.lesson-part\{border-top:[^}]*border-left:0!important/);
+ assert.match(css,/\.lesson-part\{[^}]*border:0/);
+ assert.match(css,/\.section-marker\{/);
 });
 
 test('continuation titles omit leading chapter separators and footer avoids decorative hints',()=>{
  const app=read('app/main.js');
  assert.match(app,/第\[0-9０-９\]\+章/);
  assert.doesNotMatch(app,/class="keyboard-nav-hint"/);
+});
+
+
+test('interactive demos preserve the page scroll and do not steal arrow keys',()=>{
+ const app=read('app/main.js');
+ assert.match(app,/host.innerHTML=renderDemo/);
+ assert.match(app,/\[data-demo-root\]/);
+ assert.match(app,/preventScroll:true/);
+ assert.match(app,/state.demos\[key\]=stepDemo/);
 });
